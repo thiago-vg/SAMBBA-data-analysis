@@ -89,19 +89,19 @@ The scripts should be executed in the order shown below.
 
 ## 1. Data download
 
-**data/Download_files_all_sambba_edited.ipynb**
+-   **data/Download_files_all_sambba_edited.ipynb**
 
 Downloads the complete SAMBBA dataset from the CEDA Archive and
 organizes the directory structure required by the subsequent analyses.
 
 ## 2. Data preprocessing
 
-**processing and output/flights_io_commented.py**
+-   **processing and output/flights_io_commented.py**
 
 Matches the files corresponding to each research flight across the
 different instrument datasets.
 
-**processing and output/flight_processing_commented.py**
+-   **processing and output/flight_processing_commented.py**
 
 Loads, quality-controls and harmonizes the measurements from the FAAM
 core dataset, AMS, SP2, nephelometer and PCASP.
@@ -112,25 +112,23 @@ These modules are imported automatically by the analysis notebooks.
 -   **Flight_plot_example.ipynb**
 -   **Flight_track_plot.ipynb**
 
-
-
 Generates publication-quality figures illustrating flight tracks and vertical profiles used to inspect the harmonized SAMBBA dataset. This notebook produces **Figure 1 and 2** of the manuscript.
 
 ## 4. Summary statistics
 
-**Summary_stats.ipynb**
+-   **Summary_stats.ipynb**
 
 Computes descriptive statistics of the aerosol optical and chemical properties, generating the summary tables and composition figures used throughout the study. This notebook produces **Table 2** of the manuscript and **Figures S1–S11** of the Supporting Information.
 
 ## 5. Correlation analysis
 
-**Correlation_plots_documented.ipynb**
+-   **Correlation_plots_documented.ipynb**
 
 Investigates the relationships between aerosol chemical, physical, and optical properties through correlation matrices and pairwise scatter plots. This notebook produces **Figures S12 and S13** of the Supporting Information.
 
 ## 6. Random Forest analysis
 
-**RF_and_PDP.ipynb**
+-   **RF_and_PDP.ipynb**
 
 Implements the Random Forest analysis presented in the manuscript, including model training, performance evaluation, feature importance analysis, and Partial Dependence Profiles (PDPs) of the most influential predictors. This notebook produces **Figures 3–7** of the manuscript.
 
