@@ -109,8 +109,10 @@ core dataset, AMS, SP2, nephelometer and PCASP.
 These modules are imported automatically by the analysis notebooks.
 ## 3. Exploratory analysis and visualization
 
-**Flight_plot_example.ipynb**
-**Flight_track_plot.ipynb**
+-   **Flight_plot_example.ipynb**
+-   **Flight_track_plot.ipynb**
+
+
 
 Generates publication-quality figures illustrating flight tracks and vertical profiles used to inspect the harmonized SAMBBA dataset. This notebook produces **Figure 1 and 2** of the manuscript.
 
