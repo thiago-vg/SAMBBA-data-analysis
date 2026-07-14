@@ -1,8 +1,7 @@
 # Carbonaceous Aerosol Controls Light Scattering and Absorption in Amazonian Biomass Burning Plumes
 
-[![Issues](https://img.shields.io/github/issues/thiago-vg/REPOSITORY_NAME)](https://github.com/thiago-vg/REPOSITORY_NAME/issues)
-![Static
-Badge](https://img.shields.io/badge/lines%20of%20code-XXk%2B-green)
+[![Issues](https://img.shields.io/github/issues/thiago-vg/SAMBBA-data-analysis)](https://github.com/thiago-vg/SAMBBA-data-analysis/issues)
+[![Downloads](https://img.shields.io/github/downloads/thiago-vg/SAMBBA-data-analysis/total)](https://github.com/thiago-vg/SAMBBA-data-analysis/releases)
 
 This repository contains the scripts developed for the manuscript:
 
@@ -150,7 +149,7 @@ Additional ancillary datasets include:
 
 -   MODIS MCD12C1 Land Cover Type product
 -   Natural Earth road and populated-place shapefiles
-
+-   Avaliable at: [![MCD12C1](https://img.shields.io/badge/NASA-Earthdata-orange?logo=nasa)](https://www.earthdata.nasa.gov/data/catalog?keyword=MCD12C1)
 ------------------------------------------------------------------------
 
 # Workflow
