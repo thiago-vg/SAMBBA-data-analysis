@@ -1,3 +1,13 @@
+"""
+flight_io.py
+
+Utilities for locating and matching SAMBBA flight datasets.
+
+This module searches the local SAMBBA data archive and identifies flights
+for which all datasets required by the analysis are available (core,
+core-cloud, AMS, SP2, nephelometer and flight summary files).
+"""
+
 from pathlib import Path
 from typing import List
 from dataclasses import dataclass
@@ -38,7 +48,7 @@ def get_matched_flights(base_dir: str, dirs: list) -> list[FlightFiles]:
     Returns a list of FlightFiles with all required datasets matched by flight ID.
     """
 
-    # --- Collect files ---
+    # Collect the required datasets from the SAMBBA directory structure.
     core_processed_files = collect_files(base_dir, dirs, "core_processed", "core_faam*r1*.nc", exclude="_1hz")
     dry_neph_files = collect_files(base_dir, dirs, "mo-non-core", "metoffice*neph1*.nc")
     sp2_files = collect_files(base_dir, dirs, "non-core", "man-sp2*.na")
@@ -46,7 +56,7 @@ def get_matched_flights(base_dir: str, dirs: list) -> list[FlightFiles]:
     flight_sum_files = collect_files(base_dir, dirs, ".", "flight-sum*.txt")
     core_processed_files_cloud = collect_files(base_dir, dirs, "core_processed", "core-cloud*r0*.nc")
 
-    # --- Organize by flight ---
+    # Organize files by flight identifier so measurements from different instruments can be associated.
     file_maps = {
         "core": core_processed_files,
         "neph": dry_neph_files,
@@ -64,7 +74,7 @@ def get_matched_flights(base_dir: str, dirs: list) -> list[FlightFiles]:
             if flight_id:
                 flights_dict[flight_id][key] = f
 
-    # --- Keep only complete flights ---
+    # Retain only flights for which every required instrument dataset is available.
     required_keys = {"core", "neph", "sp2", "ams", "summary", "core_cloud"}
 
     matched_flights = []

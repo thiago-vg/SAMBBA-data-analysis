@@ -1,3 +1,14 @@
+"""
+flight_processing.py
+
+Preprocessing routines for SAMBBA airborne observations.
+
+This module harmonizes measurements from the different instruments used in
+the study by converting instrument-specific time variables, applying quality
+control, resampling to a common 1-minute temporal resolution and deriving
+additional aerosol microphysical quantities.
+"""
+
 import re
 import xarray as xr
 import pandas as pd
@@ -18,10 +29,10 @@ def geometric_mean_diameter(D_lower, D_upper, concentrations):
     """
     Compute geometric mean diameter (µm) from channel boundaries and concentrations.
     """
-    # Bin midpoints in log-space
+    # Compute the representative diameter of each PCASP size bin in logarithmic space.
     D_mid = np.sqrt(D_lower * D_upper)
 
-    # Ensure concentrations is numpy array and mask invalids
+    # Ignore missing and instrument fill values before computing the weighted mean diameter.
     concentrations = np.array(concentrations, dtype=float)
     mask = (concentrations > 0) & (concentrations != 9999)
 
@@ -32,7 +43,7 @@ def geometric_mean_diameter(D_lower, D_upper, concentrations):
     conc = concentrations[mask]
     D_mid = D_mid[mask]
 
-    # Weighted geometric mean
+    # Weight the geometric mean by the particle number concentration in each size bin.
     log_Dg = np.nansum(conc * np.log(D_mid)) / np.nansum(conc)
     return np.exp(log_Dg)
 
@@ -53,7 +64,7 @@ def convert_time_to_datetime_sp2(dsf, start_date_str):
     # Extract 'Time_start_UTC' variable (seconds from 00:00 UTC)
     time_seconds = dsf["Time_UTC"].values
     
-    # Convert seconds to actual datetime
+    # Convert seconds since midnight UTC into absolute timestamps for flight synchronization.
     datetime_values = np.array([start_date + timedelta(seconds=int(sec)) for sec in time_seconds])
 
     # Assign datetime as a coordinate in the dataset
@@ -78,7 +89,7 @@ def convert_time_to_datetime_ams(dsf, start_date_str):
     # Extract 'Time_start_UTC' variable (seconds from 00:00 UTC)
     time_seconds = dsf["Time_mid_UTC"].values
     
-    # Convert seconds to actual datetime
+    # Convert seconds since midnight UTC into absolute timestamps for flight synchronization.
     datetime_values = np.array([start_date + timedelta(seconds=int(sec)) for sec in time_seconds])
 
     # Assign datetime as a coordinate in the dataset
@@ -102,7 +113,7 @@ def convert_time_to_datetime_neph(dsf, start_date_str):
     # Extract 'Time_start_UTC' variable (seconds from 00:00 UTC)
     #time_seconds = dsf["neph_spm"].values
     
-    # Convert seconds to actual datetime
+    # Convert seconds since midnight UTC into absolute timestamps for flight synchronization.
     datetime_values = np.array([start_date + timedelta(seconds=int(sec)) for sec in time_seconds_t])
 
     dsf = dsf.assign_coords(time=dsf['neph_spm'])
@@ -186,7 +197,7 @@ def dataset_sp2_ams_neph(file_path_sp2,file_path_ams,file_path_neph):
     # Get the matched date or None if not found
     flight_date_neph = match_neph.group(1) if match_neph else None
     
-    # Convert time
+    # Convert each instrument to a common datetime coordinate before temporal matching.
     ds0_sp2 = convert_time_to_datetime_sp2(ds0_sp2, flight_date_sp2)
     ds0_ams = convert_time_to_datetime_ams(ds0_ams, flight_date_ams)
     ds_neph = convert_time_to_datetime_neph(ds_neph, flight_date_neph)
@@ -211,22 +222,22 @@ def file_ams_sp2_treatment_v3(aux_ds_sp2, aux_ds_ams):
     resampled_uncs = {}
 
     for var, var_unc in zip(variables, variables_unc):
-        # Mask invalid data
+        # Remove instrument fill values prior to quality control.
         valid_mask = (aux_ds_ams[var] != 9999999) & (aux_ds_ams[var_unc] != 9999999)
 
-        # Additional restriction: only accept if uncertainty < 0.5 × value
+        # Retain only AMS observations with relative uncertainty below 50%, following the methodology adopted in the manuscript.
         valid_mask &= aux_ds_ams[var_unc] < 0.5 * aux_ds_ams[var]
 
         data = aux_ds_ams[var].where(valid_mask)
         unc = aux_ds_ams[var_unc].where(valid_mask)
 
-        # Resample (1 min mean)
+        # Aggregate all measurements to a common 1-minute resolution to match the slowest instrument.
         resampled_vars[var] = data.resample(datetime="1min").mean()
 
         # Count of valid points
         counts = data.resample(datetime="1min").count()
 
-        # Propagate uncertainty: σ_mean = sqrt(sum(σ_i²)) / N
+        # Propagate independent measurement uncertainties to the averaged observations.
         sum_unc_sq = (unc ** 2).resample(datetime="1min").sum()
         resampled_uncs[var_unc] = np.sqrt(sum_unc_sq) / counts
 
@@ -240,7 +251,7 @@ def file_ams_sp2_treatment_v3(aux_ds_sp2, aux_ds_ams):
     # NH4NO3 = 1.292 * NO3
     resampled_ds_ams["NH4NO3"] = 1.292 * resampled_ds_ams["NO3"]
 
-    # Process BC_mass
+    # Convert refractory black carbon mass concentration to µg m-3 and resample to 1-minute averages.
     valid_BC_mass_mask = aux_ds_sp2["BC_mass"] != 9999999
     filtered_ds_BC_mass = aux_ds_sp2["BC_mass"].where(valid_BC_mass_mask) * 1e-3  # Convert to µg/m³
     resampled_ds_sp2 = filtered_ds_BC_mass.resample(datetime="1min").mean()
@@ -330,14 +341,14 @@ def extract_pcasp_geo_diameter(ds_core_cloud):
     pcasp_channels = [f"PCAS2_{i:02d}" for i in range(1, 31)]
     da_pcasp = xr.concat([ds_core_cloud[v] for v in pcasp_channels], dim="PCAS2CH")
 
-    # Replace invalid values (9999) with NaN
+    # Replace instrument fill values with NaN so they are ignored during subsequent calculations.
     da_pcasp = da_pcasp.where(da_pcasp != 9999)
 
     # Diameter bin limits
     D_lower_limits = ds_core_cloud['PCAS2_D_L_NOM'].values
     D_upper_limits = ds_core_cloud['PCAS2_D_U_NOM'].values
 
-    # Loop through time to compute geometric mean diameters
+    # Compute the geometric mean particle diameter independently for each measurement time.
     times = da_pcasp['PCAS2TSPM'].values
     geom_diam_list = []
 
@@ -367,7 +378,7 @@ def process_flight(flight):
     PM_ratio = compute_pm_ratio(ds_core_cloud)
     series = pd.Series(Dgs, index=pd.to_datetime(times_cloud))
 
-    # Resample to 1-minute mean
+    # Match the temporal resolution adopted throughout the analysis.
     ams_resampled, sp2_resampled = file_ams_sp2_treatment_v3(ds_sp2,ds_ams)
     resampled_neph = ds_neph.resample(datetime='1min').mean()
     resampled_core = ds_core.resample(Time='1min').mean()
