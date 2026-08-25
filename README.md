@@ -1,13 +1,11 @@
-# Carbonaceous Aerosol Controls Light Scattering and Absorption in Amazonian Biomass Burning Plumes
+# Mass-dependent optical behavior of carbonaceous aerosols in Amazonian biomass-burning plumes
 
 [![Issues](https://img.shields.io/github/issues/thiago-vg/SAMBBA-data-analysis)](https://github.com/thiago-vg/SAMBBA-data-analysis/issues)
 [![Downloads](https://img.shields.io/github/downloads/thiago-vg/SAMBBA-data-analysis/total)](https://github.com/thiago-vg/SAMBBA-data-analysis/releases)
 
 This repository contains the scripts developed for the manuscript:
 
-> **Carbonaceous aerosol controls light scattering and absorption in
-> Amazonian biomass burning plumes: effective optical efficiencies and
-> their concentration-dependent limits**
+> **Mass-dependent optical behavior of carbonaceous aerosols in Amazonian biomass-burning plumes**
 
 *Manuscript in preparation.*
 
